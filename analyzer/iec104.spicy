@@ -1208,7 +1208,7 @@ public type Apdu = unit {
     on %done { spicy::accept_input(); }
 };
 
-type Ctrl = unit(apdu: Apdu) {
+type Ctrl = unit(inout apdu: Apdu) {
     xx: uint32 { self.set_input(self.start); }
 
     i: Ctrl_i(apdu) if (4 < apdu.len);
