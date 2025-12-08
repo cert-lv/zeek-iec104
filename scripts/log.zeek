@@ -850,7 +850,7 @@ event iec104::s
     &priority=-5
 {
     c$apdu_counter += 1;
-    local rec = APCI_S($ts=current_event_time(),
+    local rec = APCI_S($ts=network_time(),
                        $uid=c$uid,
                        $id=c$id,
                        $is_orig=is_orig,
@@ -864,7 +864,7 @@ event iec104::u
     &priority=-5
 {
     c$apdu_counter += 1;
-    local rec = APCI_U($ts=current_event_time(),
+    local rec = APCI_U($ts=network_time(),
                        $uid=c$uid,
                        $id=c$id,
                        $is_orig=is_orig,
@@ -880,7 +880,7 @@ event iec104::i
     &priority=-5
 {
     c$apdu_counter += 1;
-    local rec = APCI_I($ts=current_event_time(),
+    local rec = APCI_I($ts=network_time(),
                        $uid=c$uid,
                        $id=c$id,
                        $is_orig=is_orig,
@@ -895,7 +895,7 @@ event iec104::asdu
     &priority=-5
 {
     local rec = AsduIdent_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -909,7 +909,7 @@ event iec104::m_sp_na_1
     &priority=-5
 {
     local rec = M_SP_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -924,7 +924,7 @@ event iec104::m_sp_ta_1
     &priority=-5
 {
     local rec = M_SP_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -939,7 +939,7 @@ event iec104::m_dp_na_1
     &priority=-5
 {
     local rec = M_DP_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -954,7 +954,7 @@ event iec104::m_dp_ta_1
     &priority=-5
 {
     local rec = M_DP_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -969,7 +969,7 @@ event iec104::m_st_na_1
     &priority=-5
 {
     local rec = M_ST_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -984,7 +984,7 @@ event iec104::m_st_ta_1
     &priority=-5
 {
     local rec = M_ST_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -999,7 +999,7 @@ event iec104::m_bo_na_1
     &priority=-5
 {
     local rec = M_BO_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1014,7 +1014,7 @@ event iec104::m_bo_ta_1
     &priority=-5
 {
     local rec = M_BO_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1029,7 +1029,7 @@ event iec104::m_me_na_1
     &priority=-5
 {
     local rec = M_ME_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1044,7 +1044,7 @@ event iec104::m_me_ta_1
     &priority=-5
 {
     local rec = M_ME_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1059,7 +1059,7 @@ event iec104::m_me_nb_1
     &priority=-5
 {
     local rec = M_ME_NB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1074,7 +1074,7 @@ event iec104::m_me_tb_1
     &priority=-5
 {
     local rec = M_ME_TB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1089,7 +1089,7 @@ event iec104::m_me_nc_1
     &priority=-5
 {
     local rec = M_ME_NC_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1104,7 +1104,7 @@ event iec104::m_me_tc_1
     &priority=-5
 {
     local rec = M_ME_TC_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1119,7 +1119,7 @@ event iec104::m_it_na_1
     &priority=-5
 {
     local rec = M_IT_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1134,7 +1134,7 @@ event iec104::m_it_ta_1
     &priority=-5
 {
     local rec = M_IT_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1149,7 +1149,7 @@ event iec104::m_ep_ta_1
     &priority=-5
 {
     local rec = M_EP_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1164,7 +1164,7 @@ event iec104::m_ep_tb_1
     &priority=-5
 {
     local rec = M_EP_TB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1179,7 +1179,7 @@ event iec104::m_ep_tc_1
     &priority=-5
 {
     local rec = M_EP_TC_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1194,7 +1194,7 @@ event iec104::m_ps_na_1
     &priority=-5
 {
     local rec = M_PS_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1209,7 +1209,7 @@ event iec104::m_me_nd_1
     &priority=-5
 {
     local rec = M_ME_ND_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1224,7 +1224,7 @@ event iec104::m_sp_tb_1
     &priority=-5
 {
     local rec = M_SP_TB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1239,7 +1239,7 @@ event iec104::m_dp_tb_1
     &priority=-5
 {
     local rec = M_DP_TB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1254,7 +1254,7 @@ event iec104::m_st_tb_1
     &priority=-5
 {
     local rec = M_ST_TB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1269,7 +1269,7 @@ event iec104::m_bo_tb_1
     &priority=-5
 {
     local rec = M_BO_TB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1284,7 +1284,7 @@ event iec104::m_me_td_1
     &priority=-5
 {
     local rec = M_ME_TD_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1299,7 +1299,7 @@ event iec104::m_me_te_1
     &priority=-5
 {
     local rec = M_ME_TE_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1314,7 +1314,7 @@ event iec104::m_me_tf_1
     &priority=-5
 {
     local rec = M_ME_TF_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1329,7 +1329,7 @@ event iec104::m_it_tb_1
     &priority=-5
 {
     local rec = M_IT_TB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1344,7 +1344,7 @@ event iec104::m_ep_td_1
     &priority=-5
 {
     local rec = M_EP_TD_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1359,7 +1359,7 @@ event iec104::m_ep_te_1
     &priority=-5
 {
     local rec = M_EP_TE_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1374,7 +1374,7 @@ event iec104::m_ep_tf_1
     &priority=-5
 {
     local rec = M_EP_TF_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1389,7 +1389,7 @@ event iec104::c_sc_na_1
     &priority=-5
 {
     local rec = C_SC_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1404,7 +1404,7 @@ event iec104::c_dc_na_1
     &priority=-5
 {
     local rec = C_DC_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1419,7 +1419,7 @@ event iec104::c_rc_na_1
     &priority=-5
 {
     local rec = C_RC_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1434,7 +1434,7 @@ event iec104::c_se_na_1
     &priority=-5
 {
     local rec = C_SE_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1449,7 +1449,7 @@ event iec104::c_se_nb_1
     &priority=-5
 {
     local rec = C_SE_NB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1464,7 +1464,7 @@ event iec104::c_se_nc_1
     &priority=-5
 {
     local rec = C_SE_NC_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1479,7 +1479,7 @@ event iec104::c_bo_na_1
     &priority=-5
 {
     local rec = C_BO_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1494,7 +1494,7 @@ event iec104::c_sc_ta_1
     &priority=-5
 {
     local rec = C_SC_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1509,7 +1509,7 @@ event iec104::c_dc_ta_1
     &priority=-5
 {
     local rec = C_DC_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1524,7 +1524,7 @@ event iec104::c_rc_ta_1
     &priority=-5
 {
     local rec = C_RC_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1539,7 +1539,7 @@ event iec104::c_se_ta_1
     &priority=-5
 {
     local rec = C_SE_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1554,7 +1554,7 @@ event iec104::c_se_tb_1
     &priority=-5
 {
     local rec = C_SE_TB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1569,7 +1569,7 @@ event iec104::c_se_tc_1
     &priority=-5
 {
     local rec = C_SE_TC_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1584,7 +1584,7 @@ event iec104::c_bo_ta_1
     &priority=-5
 {
     local rec = C_BO_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1599,7 +1599,7 @@ event iec104::m_ei_na_1
     &priority=-5
 {
     local rec = M_EI_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1614,7 +1614,7 @@ event iec104::c_ic_na_1
     &priority=-5
 {
     local rec = C_IC_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1629,7 +1629,7 @@ event iec104::c_ci_na_1
     &priority=-5
 {
     local rec = C_CI_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1644,7 +1644,7 @@ event iec104::c_rd_na_1
     &priority=-5
 {
     local rec = C_RD_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1659,7 +1659,7 @@ event iec104::c_cs_na_1
     &priority=-5
 {
     local rec = C_CS_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1674,7 +1674,7 @@ event iec104::c_rp_na_1
     &priority=-5
 {
     local rec = C_RP_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1689,7 +1689,7 @@ event iec104::c_ts_ta_1
     &priority=-5
 {
     local rec = C_TS_TA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1704,7 +1704,7 @@ event iec104::p_me_na_1
     &priority=-5
 {
     local rec = P_ME_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1719,7 +1719,7 @@ event iec104::p_me_nb_1
     &priority=-5
 {
     local rec = P_ME_NB_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1734,7 +1734,7 @@ event iec104::p_me_nc_1
     &priority=-5
 {
     local rec = P_ME_NC_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1749,7 +1749,7 @@ event iec104::p_ac_na_1
     &priority=-5
 {
     local rec = P_AC_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1764,7 +1764,7 @@ event iec104::f_fr_na_1
     &priority=-5
 {
     local rec = F_FR_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1779,7 +1779,7 @@ event iec104::f_sr_na_1
     &priority=-5
 {
     local rec = F_SR_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1794,7 +1794,7 @@ event iec104::f_sc_na_1
     &priority=-5
 {
     local rec = F_SC_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1809,7 +1809,7 @@ event iec104::f_ls_na_1
     &priority=-5
 {
     local rec = F_LS_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1824,7 +1824,7 @@ event iec104::f_af_na_1
     &priority=-5
 {
     local rec = F_AF_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1839,7 +1839,7 @@ event iec104::f_sg_na_1
     &priority=-5
 {
     local rec = F_SG_NA_1_log(
-        $ts=current_event_time(),
+        $ts=network_time(),
         $uid=c$uid,
         $id=c$id,
         $is_orig=is_orig,
@@ -1853,7 +1853,7 @@ event iec104::unknown_asdu
     (c: connection, is_orig: bool, type_id: ::IEC104TypeID, hex: string)
     &priority=-5
 {
-    local rec = UNK($ts=current_event_time(),
+    local rec = UNK($ts=network_time(),
                     $uid=c$uid,
                     $id=c$id,
                     $is_orig=is_orig,

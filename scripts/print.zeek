@@ -64,7 +64,7 @@ event iec104::u
     (c: connection, is_orig: bool, startdt: count, stopdt: count, testfr: count)
     &priority=-10
 {
-    print comm_info(current_event_time(), c, is_orig),
+    print comm_info(network_time(), c, is_orig),
           u_info(startdt, stopdt, testfr);
 }
 
@@ -72,7 +72,7 @@ event iec104::s
     (c: connection, is_orig: bool, rsn: count)
     &priority=-10
 {
-    print comm_info(current_event_time(), c, is_orig),
+    print comm_info(network_time(), c, is_orig),
           cat("S rsn:", rsn);
 }
 
@@ -80,7 +80,7 @@ event iec104::i
     (c: connection, is_orig: bool, ssn: count, rsn: count)
     &priority=-10
 {
-    print comm_info(current_event_time(), c, is_orig),
+    print comm_info(network_time(), c, is_orig),
           fmt("I ssn:%d, rsn:%d", ssn, rsn);
 }
 
