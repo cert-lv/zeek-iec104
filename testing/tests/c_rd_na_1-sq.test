@@ -1,3 +1,9 @@
+# @TEST-DOC: Test parsing behavior of iec104.
+# README: testing/Scripts/standalone/README
+#
+# @TEST-EXEC: cat %INPUT | grep -o '^[0-9A-Fa-f ]*' | xxd -r -p | spicy-dump -p iec104::Apdu "${HLTO}" >output 2>&1
+# @TEST-EXEC: TEST_DIFF_CANONIFIER= btest-diff output
+
 ;;; This is a purely synthetic test file with a sequnce of C_RD_NA_1
 ;;; records (basically a bunch of raw_data bytes starting from base
 ;;; address).

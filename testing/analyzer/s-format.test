@@ -1,2 +1,0 @@
-68 04               ; iec104::Apdu len=4
-01 00 7E 14         ; iec104::Ctrl_s tag=1 rsn=2623

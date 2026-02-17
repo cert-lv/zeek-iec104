@@ -1,3 +1,9 @@
+# @TEST-DOC: Test parsing behavior of iec104.
+# README: testing/Scripts/standalone/README
+#
+# @TEST-EXEC: cat %INPUT | grep -o '^[0-9A-Fa-f ]*' | xxd -r -p | spicy-dump -p iec104::Apdu "${HLTO}" >output 2>&1
+# @TEST-EXEC: TEST_DIFF_CANONIFIER= btest-diff output
+
 68 8c               ; iec104::Apdu len=140
 14 00 02 00         ; iec104::Ctrl_i tag=0 ssn=10 rsn=1
 
