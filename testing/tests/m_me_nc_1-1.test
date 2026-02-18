@@ -1,5 +1,12 @@
+# @TEST-DOC: Test parsing behavior of iec104.
+# README: testing/Scripts/standalone/README
+#
+# @TEST-EXEC: cat %INPUT | grep -o '^[0-9A-Fa-f ]*' | xxd -r -p | spicy-dump -p iec104::Apdu "${HLTO}" >output 2>&1
+# @TEST-EXEC: TEST_DIFF_CANONIFIER= btest-diff output
+
 68 12               ; iec104::Apdu len=18
-56 d0 e6 54         ; iec104::Ctrl_i tag=0 ssn=26667 rsn=10867
+
+02 ae 5c 8c         ; iec104::Ctrl_i tag=0 ssn=22273 rsn=17966
 
                     ; iec104::AsduIdent
 0d                  ; type_id=TypeID::M_ME_NC_1
@@ -10,6 +17,6 @@
 
                     ; iec104::AsduIOs
                     ; iec104::M_ME_NC_1_io
-c6 15 00            ; obj_addr=5574
-cd 4c 2b 43         ; r32=171.3
+ae 15 00            ; obj_addr=5550
+60 e5 96 c0         ; r32=-4.7155
 00                  ; iec104::QDS ov=0 bl=0 sb=0 nt=0 iv=0
