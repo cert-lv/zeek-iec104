@@ -112,43 +112,29 @@
     (process-file stream out check-cb)))
 
 (defmethod process-file ((in stream) (out stream) (check-cb function))
-  (let ((high nil)
-        (bol t)) ; beginning-of-line?
+  (let ((high nil))
     (declare (type (or null (unsigned-byte 4)) high))
-    (labels ((eolp (c) (or (char= c #\Newline) (char= c #\Return))))
-      (loop for char = (read-char in nil nil)
-            do (cond ((null char)
-                      (return))
-
-                     ;; Ignore lines whose first character is '#'
-                     ((and bol (char= #\# char))
-                      (read-line in nil nil)  ; discard rest of line
-                      (setf bol t))
-
-                     ((char= #\; char)
-                      (map 'nil check-cb (funcall #'comment-reader in char))
-                      (setf bol t))
-
-                     ((eolp char)
-                      (setf bol t))
-
-                     ((or (char= #\space char)
-                          (char= #\tab char)
-                          (not (graphic-char-p char)))
-                      ;; Skip.
-                      (setf bol nil))
-
-                     (t
-                      (setf bol nil)
-                      (let ((bits (digit-char-p char 16)))
-                        (declare (type (or null (unsigned-byte 4)) bits))
-                        (cond ((not bits)
-                               (warn "Invalid character: ~S" char))
-                              (high
-                               (write-byte (+ (ash high 4) bits) out)
-                               (setq high nil))
-                              (t
-                               (setq high bits)))))))))
+    (loop for char = (read-char in nil nil)
+          do (cond ((null char)
+                    (return))
+                   ((char= #\; char)
+                    (map 'nil check-cb (funcall #'comment-reader in char)))
+                   ((char= #\# char)
+                    (read-line in))
+                   ((or (char= #\space char)
+                        (not (graphic-char-p char)))
+                    ;; Skip.
+                    )
+                   (t
+                    (let ((bits (digit-char-p char 16)))
+                      (declare (type (or null (unsigned-byte 4)) bits))
+                      (cond ((not bits)
+                             (warn "Invalid character: ~S" char))
+                            (high
+                             (write-byte (+ (ash high 4) bits) out)
+                             (setq high nil))
+                            (t
+                             (setq high bits))))))))
   (close out)
   (funcall check-cb nil))
 
