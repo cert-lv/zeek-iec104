@@ -63,7 +63,7 @@ Or even on one line:
 Pass one or more test files to the ~test.sh~ script.  For example, to run all
 tests just issue the following command:
 
-: ./test.sh *.txt
+: ./test.sh ../../tests/*.test
 
 ~test.sh~ script will compile the Spicy analyzer (~analyzer/iec104.spicy~ in
 project root) in debug mode, creating ~/tmp/iec104~ binary.
