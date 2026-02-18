@@ -24,8 +24,10 @@ things:
   indentation spaces).  Assertions will be tested in the order they appear in
   the text file.
 
-- A comment starting with two or more semicolons is just a comment, and all
-  text until the end of line is ignored.
+
+- A comment starting with =#= or two or more semicolons is just a comment, and
+  all text until the end of line is ignored.  These comment characters do not
+  have to be at the start of the line.
 
 Example test (from ~s-format.test~ file):
 
