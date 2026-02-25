@@ -1,0 +1,8 @@
+@TEST-DOC: Test Zeek parsing a trace file through the iec104 analyzer.
+
+@TEST-EXEC: zeek -Cr ${TRACES}/fifth/read.pcapng ${PACKAGE}
+@TEST-EXEC: btest-diff iec104_ctrl.log
+@TEST-EXEC: btest-diff iec104_query.log
+@TEST-EXEC: btest-diff iec104_file.log
+@TEST-EXEC: btest-diff iec104_telemetry.log
+@TEST-EXEC: [ ! -e weird.log ]
