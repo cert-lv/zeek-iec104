@@ -1,0 +1,8 @@
+@TEST-DOC: Test Zeek parsing a trace file through the iec104 analyzer.
+
+@TEST-EXEC: zeek -Cr ${TRACES}/fourth/20200606_UOWM_IEC104_Dataset_c_rp_na_1_iecserver1.pcap ${PACKAGE}
+@TEST-EXEC: ls -1 > /tmp/debug
+@TEST-EXEC: btest-diff iec104_query.log
+@TEST-EXEC: btest-diff iec104_ctrl.log
+@TEST-EXEC: btest-diff iec104_telemetry.log
+@TEST-EXEC: [ ! -e weird.log ]

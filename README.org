@@ -56,9 +56,18 @@ The plugin is implemented using following files:
  - ~analyzer/zeek_iec104.spicy~ :: Spicy protocol analyzer.
  - ~analyzer/iec104.evt~ :: Event descriptions for Zeek integration.
  - ~scripts/iec104.zeek~ :: Zeek side definitions of structures exported from
-   Spicy.
- - ~scripts/log.zeek~  ::  IEC 104 communication logging, see [[*Logging capabilities][Logging
-   capabilities]] below.
+   Spicy and analyzer registration for IEC-104 default port ~2404/tcp~.
+ - ~scripts/common.zeek~ :: Shared helper code
+ - ~scripts/log_telemetry.zeek~ :: Emits telemetry/measured-value style information objects into ~iec104_telemetry.log~.
+ - ~scripts/log_cmd.zeek~ :: Command transaction logging with correlation of ~Act~ / ~Actcon~ / ~ActTerm~ into:
+   + ~iec104_write.log~ (writes/commands)
+   + ~iec104_query.log~ (interrogation/counter interrogation)
+   + ~iec104_ctrl.log~ (clock sync/test/reset)
+   + ~iec104_param.log~ (parameterization)
+ - ~scripts/log_read.zeek~ :: Correlates ~C_RD_NA_1~ read request/response
+   pairs into ~iec104_read.log~.
+ - ~scripts/log_file.zeek~ :: Summarizes file transfer segment bursts
+   (~F_SG_NA_1~) and flushes on end markers or timeout into ~iec104_file.log~.
  - ~scripts/print.zeek~ :: Support script that prints communication in
    sequential manner in a way that can be easily cross-checked with other
    tools (e.g., Wireshark).  This is how the initial output of analyzing
@@ -161,74 +170,265 @@ the following ASDU information object types:
 
 * Logging capabilities
 
-This plugin creates many log files, all of which start with a ~iec104-~
-prefix.  All logs have the following fields:
+This repository ships a set of Zeek scripts that turn the Spicy-generated IEC-104
+events into a number of dedicated log files.
 
-- ~ts~ :: Message timestamp.
-- ~uid~ :: Zeek connection identifier.
-- ~id.orig_h~ :: Connection originator host.
-- ~id.orig_p~ :: Connection originator port.
-- ~id.oesp_h~ :: Connection responding host.
-- ~id.oesp_p~ :: Connection responding port.
-- ~is_orig~ :: True if the message is from the connection originator.
-- ~apdu~ :: APDU counter, increased for each APDU.  Useful for cross-linking
-  data from different logs.
+The log files are written in Zeek's default TSV format unless you enable JSON
+logging (e.g., via Zeek's ~LogAscii::use_json~).
 
-To write logs in JSON format, set the variable ~iec104::log_as_json~ (defined
-in ~scripts/log.zeek~) to ~T~, either by changing the source or in another
-script using the following statement:
+** Common field semantics (applies to most logs)
 
-: redef iec104::log_as_json = T;
+Many logs share the following concepts:
 
-** iec104-apci_i.log
+- ~ts~: event/transaction start time as seen by Zeek.
+- ~uid~: Zeek connection UID (useful for joining with ~conn.log~).
+- ~id~: Zeek 4-tuple record (~orig_h~, ~orig_p~, ~resp_h~, ~resp_p~).
+- ~is_orig~: Zeek's direction flag for the event (originator -> responder).
+- ~asdu_type~: IEC-104 ASDU Type ID (printed as the enum name, e.g. ~C_SC_NA_1~).
+- ~cot~: Cause of Transmission (enum, e.g. ~Act~, ~Actcon~, ~Spont~, ~Inrogen~, ...).
+- ~ca~: "Common Address of ASDU".
+- ~ioa~: "Information Object Address" (object address).
 
-APCI I-Format message fields.  In addition to common fields has the following:
+Unless noted otherwise, optional fields are omitted (empty in TSV, absent in JSON)
+when the value is not available for the particular ASDU type or phase.
 
-- ~ssn~ :: Send sequence number
-- ~rsn~ :: Receive sequence number
+** Transaction correlation and status fields
 
-ASDU fields are in [[*iec104-asdu_ident.log][iec104-asdu_ident.log]].
+The command-oriented logs (~iec104_write~, ~iec104_query~, ~iec104_ctrl~,
+~iec104_param~) correlate the IEC-104 activation sequence:
 
-** iec104-apci_s.log
+- ~Act~ (activation)
+- ~Actcon~ (activation confirmation)
+- ~ActTerm~ (activation termination)
 
-APCI S-Format message fields.  In addition to common fields has the following:
+Correlation is performed per connection and per command "shape" (ASDU type,
+addressing, value, qualifiers, etc.) using FIFO assumptions (i.e., the first
+~Actcon~ is matched to the first pending ~Act~ of the same command "shape").
 
-- ~rsn~ :: Receive sequence number
+These logs expose:
 
-** iec104-apci_u.log
+- ~actcon_ts~, ~actterm_ts~: timestamps of the observed phases (if any).
+- ~duration~: typically ~actterm_ts - ts~ (only present if both exist).
+- ~missing~: comma-separated list of missing phases (e.g., ~Actcon,ActTerm~).
+- ~error~ / ~error_reason~: derived error signal and reasons; reasons are
+  comma-separated, examples:
+  - ~negative_confirmation@Actcon~ (PN flag set)
+  - ~test_frame@Act~ (TEST flag set)
+  - ~cot=UnkType@Actcon~ (hard error COT values)
+- ~status~: synthesized outcome string:
+  - ~ok~: all expected phases observed, no error
+  - ~ok_broadcast~: broadcast CA (~65535~) where confirmations are not expected
+  - ~incomplete~: missing phases but no timeout triggered yet
+  - ~error~: error conditions observed
+  - ~timeout(request)~, ~timeout(Actcon,ActTerm)~, ...: timed-out with missing phases
 
-APCI U-Format message fields.  In addition to common fields has the following:
+The read log (~iec104_read.log~) correlates request/response pairs for ~C_RD_NA_1~.
 
-- ~startdt~ ::
-- ~stopdt~ ::
-- ~testfr~ ::
+** Log formats
 
-** iec104-asdu_ident.log
+The following sections document each log file (path and column meanings).
 
-- ~ident.type_id~ :: Information object type ID (symbolic)
-- ~ident.nobj~ :: Number of objects in ASDU
-- ~ident.sq~ :: SQ flag
-- ~ident.cot~ :: Cause of transmission (symbolic)
-- ~ident.pn~ :: P/N (positive/negative) flag
-- ~ident.test~ :: Test flag
-- ~ident.originator_address~ :: Originator address
-- ~ident.common_address~ :: Common address
+*** ~iec104_telemetry.log~ (telemetry / measured values)
 
-** Information object type specific logs
+This log emits one entry per telemetry object (e.g., single-point or measured
+values). It focuses on "what value was reported" plus quality and optional timestamps.
 
-Each ASDU information object type is logged in a separate log file with the
-symbolic name of ASDU type ID in the file name, e.g., ~iec104-C_DC_NA_1.log~.
-Each file has information object type specific fields (in addition to common
-fields), not documented here at the moment.
+Columns:
 
-** iec104-unk.log
+| Field     | Type            | Optional | Meaning |
+|-----------+-----------------+----------+---------|
+| ts        | time            | no       | Time when Zeek processed the information object. |
+| uid       | string          | no       | Zeek connection UID. |
+| id        | conn_id         | no       | Zeek connection 4-tuple. |
+| asdu_type | IEC104TypeID    | no       | ASDU type of the current ASDU context. |
+| cot       | IEC104CoT       | no       | Cause of transmission of the current ASDU context. |
+| ca        | count           | no       | Common address (CA). |
+| ioa       | count           | no       | Information object address. |
+| value     | string          | yes      | Human-readable value (type-dependent; e.g. ~"T"~, ~"0xdeadbeef"~, ~"12.34"~). |
+| spi       | bool            | yes      | Single-point information state (for ~M_SP_*~). |
+| bl        | bool            | yes      | "Blocked" quality flag (when available). |
+| sb        | bool            | yes      | "Substituted" quality flag (when available). |
+| nt        | bool            | yes      | "Not topical" quality flag (when available). |
+| iv        | bool            | yes      | "Invalid" quality flag (when available). |
+| ov        | bool            | yes      | "Overflow" quality flag (for QDS-based types). |
+| cp24      | string          | yes      | CP24Time2a formatted string (if present in the IO). |
+| cp56      | string          | yes      | CP56Time2a formatted string (if present in the IO). |
 
-Messages with unknown (vendor-specific) ASDU types.  In addition to common
-fields has the following fields:
+Notes:
 
-- ~type_id~ :: Symbolic name of the ASDU information object type ID
-- ~type_id_code~ :: Numeric value of the ASDU information object type ID
-- ~data~ :: Binary message data as a hex string
+- For ASDU types that do not carry quality flags, the respective fields may be unset.
+- CP24/CP56 are rendered as strings (see ~common.zeek~), e.g.
+  - CP24: ~min=... sec=... msec=... iv=T/F~
+  - CP56: ~y=... mon=... day=... h=... min=... sec=... msec=... iv=T/F~
+
+*** ~iec104_write.log~
+
+Tracks write-like command transactions (e.g., single command, double command,
+set-point, bitstring command), correlating ~Act~ / ~Actcon~ / ~ActTerm~.
+
+Columns:
+
+| Field        | Type         | Optional | Meaning |
+|--------------+--------------+----------+---------|
+| ts           | time         | no       | Transaction start (usually time of ~Act~). |
+| uid          | string       | no       | Connection UID. |
+| id           | conn_id      | no       | Connection 4-tuple. |
+| is_orig      | bool         | no       | Direction of the phase that started/anchored the transaction. |
+| action       | string       | no       | Normalized action name (e.g. ~single_write~, ~double_write~, ~setpoint_write~, ~bitstring_write~, ~step_write~). |
+| asdu_type    | IEC104TypeID | no       | ASDU type. |
+| cot          | IEC104CoT    | no       | COT of the anchored phase (typically ~Act~). |
+| ca           | count        | no       | Common address. |
+| ioa          | count        | yes      | Information object address (when applicable). |
+| value        | string       | yes      | Normalized value representation (type-dependent). |
+| se           | bool         | yes      | Select/Execute flag (where available). |
+| qualifier    | count        | yes      | Command qualifier (e.g., QU/QL depending on command type). |
+| actcon_ts    | time         | yes      | Timestamp when ~Actcon~ was seen. |
+| actterm_ts   | time         | yes      | Timestamp when ~ActTerm~ was seen. |
+| duration     | interval     | yes      | ~actterm_ts - ts~ when both are present. |
+| missing      | string       | yes      | Missing phases (comma-separated). |
+| error        | bool         | yes      | Derived error indicator. |
+| error_reason | string       | yes      | Comma-separated error reasons. |
+| status       | string       | yes      | Outcome (~ok~, ~incomplete~, ~error~, ~timeout(...)~, ~ok_broadcast~). |
+
+*** ~iec104_query.log~
+
+Tracks interrogation-like transactions.
+
+Columns:
+
+| Field        | Type         | Optional | Meaning |
+|--------------+--------------+----------+---------|
+| ts           | time         | no       | Transaction start (usually time of ~Act~). |
+| uid          | string       | no       | Connection UID. |
+| id           | conn_id      | no       | Connection 4-tuple. |
+| is_orig      | bool         | no       | Direction of the anchored phase. |
+| action       | string       | no       | ~interrogation~ or ~counter_interrogation~. |
+| asdu_type    | IEC104TypeID | no       | ASDU type. |
+| cot          | IEC104CoT    | no       | COT of anchored phase. |
+| ca           | count        | no       | Common address. |
+| ioa          | count        | yes      | Information object address (when present). |
+| qoi          | count        | yes      | Qualifier of interrogation (for ~C_IC_NA_1~). |
+| qcc_rqt      | count        | yes      | Counter interrogation request (RQT) (for ~C_CI_NA_1~). |
+| qcc_frz      | count        | yes      | Counter freeze (FRZ) (for ~C_CI_NA_1~). |
+| actcon_ts    | time         | yes      | Timestamp when ~Actcon~ was seen. |
+| actterm_ts   | time         | yes      | Timestamp when ~ActTerm~ was seen. |
+| duration     | interval     | yes      | ~actterm_ts - ts~ when both are present. |
+| missing      | string       | yes      | Missing phases. |
+| error        | bool         | yes      | Derived error indicator. |
+| error_reason | string       | yes      | Comma-separated error reasons. |
+| status       | string       | yes      | Outcome. |
+
+*** ~iec104_ctrl.log~
+
+Tracks control-type operations such as clock synchronization, test, and reset
+process.
+
+Columns:
+
+| Field        | Type         | Optional | Meaning |
+|--------------+--------------+----------+---------|
+| ts           | time         | no       | Transaction start (usually time of ~Act~). |
+| uid          | string       | no       | Connection UID. |
+| id           | conn_id      | no       | Connection 4-tuple. |
+| is_orig      | bool         | no       | Direction of anchored phase. |
+| action       | string       | no       | ~clock_sync~, ~test~, ~reset_process~. |
+| asdu_type    | IEC104TypeID | no       | ASDU type. |
+| cot          | IEC104CoT    | no       | COT of anchored phase. |
+| ca           | count        | no       | Common address. |
+| ioa          | count        | yes      | Information object address. |
+| time_sync    | string       | yes      | Formatted CP56Time2a (for clock sync/test where present). |
+| tsc          | count        | yes      | Test sequence counter (for ~C_TS_TA_1~). |
+| qrp          | count        | yes      | Qualifier of reset process (for ~C_RP_NA_1~). |
+| actcon_ts    | time         | yes      | Timestamp when ~Actcon~ was seen. |
+| actterm_ts   | time         | yes      | Timestamp when ~ActTerm~ was seen. |
+| duration     | interval     | yes      | ~actterm_ts - ts~ when both are present. |
+| missing      | string       | yes      | Missing phases. |
+| error        | bool         | yes      | Derived error indicator. |
+| error_reason | string       | yes      | Comma-separated error reasons. |
+| status       | string       | yes      | Outcome. |
+
+*** ~iec104_param.log~
+
+Tracks parameterization transactions (~P_ME_*~ and ~P_AC_NA_1~) *except* when they
+are part of interrogation results (those are treated as telemetry and appear in
+~iec104_telemetry.log~).
+
+Columns:
+
+| Field        | Type         | Optional | Meaning |
+|--------------+--------------+----------+---------|
+| ts           | time         | no       | Transaction start (usually time of ~Act~). |
+| uid          | string       | no       | Connection UID. |
+| id           | conn_id      | no       | Connection 4-tuple. |
+| is_orig      | bool         | no       | Direction of anchored phase. |
+| action       | string       | no       | ~param_measured~ or ~param_activation~. |
+| asdu_type    | IEC104TypeID | no       | ASDU type. |
+| cot          | IEC104CoT    | no       | COT of anchored phase. |
+| ca           | count        | no       | Common address. |
+| ioa          | count        | yes      | Information object address. |
+| value        | string       | yes      | Value / parameter representation. |
+| qpm_kpa      | count        | yes      | KPA from QPM (parameter class). |
+| qpm_pop      | bool         | yes      | POP from QPM. |
+| qpm_lpc      | bool         | yes      | LPC from QPM. |
+| qpa          | count        | yes      | Qualifier of parameter activation (for ~P_AC_NA_1~). |
+| actcon_ts    | time         | yes      | Timestamp when ~Actcon~ was seen. |
+| actterm_ts   | time         | yes      | Timestamp when ~ActTerm~ was seen. |
+| duration     | interval     | yes      | ~actterm_ts - ts~ when both are present. |
+| missing      | string       | yes      | Missing phases. |
+| error        | bool         | yes      | Derived error indicator. |
+| error_reason | string       | yes      | Comma-separated error reasons. |
+| status       | string       | yes      | Outcome. |
+
+*** ~iec104_read.log~
+
+This log correlates read requests (~C_RD_NA_1~ from the originator) with the
+corresponding response (~C_RD_NA_1~ from the responder) using a FIFO model.
+
+Columns:
+
+| Field        | Type         | Optional | Meaning |
+|--------------+--------------+----------+---------|
+| ts           | time         | no       | Request timestamp (when seen as originator). |
+| uid          | string       | no       | Connection UID. |
+| id           | conn_id      | no       | Connection 4-tuple. |
+| is_orig      | bool         | no       | Direction of the anchored phase; for a complete transaction this is typically ~T~ (request). |
+| action       | string       | no       | Always ~value_read~. |
+| asdu_type    | IEC104TypeID | no       | ASDU type (~C_RD_NA_1~). |
+| cot          | IEC104CoT    | no       | COT from the anchored phase. |
+| ca           | count        | no       | Common address. |
+| ioa          | count        | yes      | Information object address being read. |
+| raw_data     | count        | yes      | Raw data returned by the read response (if present in the response). |
+| actcon_ts    | time         | yes      | Timestamp when the response was seen (used analogously to "confirmation"). |
+| duration     | interval     | yes      | ~actcon_ts - ts~ when both request and response are present. |
+| missing      | string       | yes      | Missing parts: ~request~, ~response~. |
+| error        | bool         | yes      | Derived error indicator (PN/TEST/hard-error COT). |
+| error_reason | string       | yes      | Comma-separated error reasons. |
+| status       | string       | yes      | ~ok~, ~incomplete~, ~error~, ~timeout(...)~. |
+
+*** ~iec104_file.log~
+
+This log summarizes file segment transfers (~F_SG_NA_1~) and emits a single row
+per (connection UID, direction, IOA, file name) "transfer burst". The summary is
+flushed when an end marker is observed (~F_LS_NA_1~ or ~F_AF_NA_1~) or when the
+transfer stalls for ~file_seg_timeout~.
+
+Columns:
+
+| Field     | Type     | Optional | Meaning |
+|----------+----------+----------+---------|
+| ts       | time     | no       | Timestamp of the first observed segment in the burst. |
+| ts_end   | time     | yes      | Timestamp of the last observed segment (or last activity before timeout). |
+| duration | interval | yes      | ~ts_end - ts~ when available. |
+| uid      | string   | no       | Connection UID. |
+| id       | conn_id  | no       | Connection 4-tuple. |
+| direction| string   | no       | ~control_to_station~ if ~is_orig=T~, else ~station_to_control~. |
+| is_orig  | bool     | no       | Direction flag used for the segment stream. |
+| ca       | count    | no       | Common address seen for the segments (tries to prefer non-broadcast over ~65535~). |
+| ioa      | count    | no       | Object address (file object). |
+| fname    | count    | no       | File name / identifier (as carried in the protocol). |
+| segments | count    | no       | Number of ~F_SG_NA_1~ segments seen. |
+| bytes    | count    | no       | Total bytes of segment payloads (sum of ~|seg|~). |
+| status   | string   | no       | ~ok~ (end marker seen) or ~timeout~ (flushed due to inactivity) or ~in_progress~ (internal state, typically not emitted). |
 
 * Resources
 
